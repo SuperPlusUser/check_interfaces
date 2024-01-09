@@ -1382,9 +1382,11 @@ netsnmp_session *start_session_v3(netsnmp_session *session, char *user, char *au
         if (!strcmp(priv_proto, "AES")) {
             session->securityPrivProto = snmp_duplicate_objid(usmAESPrivProtocol, USM_PRIV_PROTO_AES_LEN);
             session->securityPrivProtoLen = USM_PRIV_PROTO_AES_LEN;
+#ifdef usmDESPrivProtocol
         } else if (!strcmp(priv_proto, "DES")) {
             session->securityPrivProto = snmp_duplicate_objid(usmDESPrivProtocol, USM_PRIV_PROTO_DES_LEN);
             session->securityPrivProtoLen = USM_PRIV_PROTO_DES_LEN;
+#endif /* usmDESPrivProtocol */
         } else {
             printf("Unknown priv protocol %s\n", priv_proto);
             exit(3);
@@ -1401,6 +1403,14 @@ netsnmp_session *start_session_v3(netsnmp_session *session, char *user, char *au
         if (!strcmp(auth_proto, "SHA")) {
             session->securityAuthProto = snmp_duplicate_objid(usmHMACSHA1AuthProtocol, USM_AUTH_PROTO_SHA_LEN);
             session->securityAuthProtoLen = USM_AUTH_PROTO_SHA_LEN;
+        } else if (!strcmp(auth_proto, "SHA256")) {
+            session->securityAuthProto = snmp_duplicate_objid(
+                usmHMAC192SHA256AuthProtocol, OID_LENGTH(usmHMAC192SHA256AuthProtocol));
+            session->securityAuthProtoLen = OID_LENGTH(usmHMAC192SHA256AuthProtocol);
+        } else if (!strcmp(auth_proto, "SHA512")) {
+            session->securityAuthProto = snmp_duplicate_objid(
+                usmHMAC384SHA512AuthProtocol, OID_LENGTH(usmHMAC384SHA512AuthProtocol));
+            session->securityAuthProtoLen = OID_LENGTH(usmHMAC384SHA512AuthProtocol);
         } else if (!strcmp(auth_proto, "MD5")) {
             session->securityAuthProto = snmp_duplicate_objid(usmHMACMD5AuthProtocol, USM_AUTH_PROTO_MD5_LEN);
             session->securityAuthProtoLen = USM_AUTH_PROTO_MD5_LEN;
@@ -1474,7 +1484,7 @@ int usage(char *progname)
 #ifdef INDEXES
     printf(" -i|--interfaces\t\tinterface list\n");
 #endif /* INDEXES */
-    printf(" -j|--auth-proto\tSNMPv3 Auth Protocol (SHA|MD5)\n");
+    printf(" -j|--auth-proto\tSNMPv3 Auth Protocol (SHA|SHA256|SHA512|MD5)\n");
     printf(" -J|--auth-phrase\tSNMPv3 Auth Phrase\n");
     printf(" -k|--priv-proto\tSNMPv3 Privacy Protocol (AES|DES)\n");
     printf(" -K|--priv-phrase\tSNMPv3 Privacy Phrase\n");
