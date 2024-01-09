@@ -731,7 +731,7 @@ main(int argc, char *argv[])
 
     /* TODO: This is just a slightly changed copy from above. I think it could be solved better (i.e. by putting it into a function) but it works this way :-) */
 
-    if (get_names_flag && list) {
+    if (get_names_flag) {
         lastifflag = 0;
         count = 0;
         /* allocate the space for the names OIDs */
@@ -898,7 +898,11 @@ main(int argc, char *argv[])
      */
     for (j = 0; j < ifNumber; j++) {
         /* add the interface to the oldperfdata list */
-        if (interfaces[j].descr) strcpy_nospaces(oldperfdata[j].descr, interfaces[j].descr);
+        if (get_names_flag) {
+            if (interfaces[j].name) strcpy_nospaces(oldperfdata[j].name, interfaces[j].name);
+        } else {
+            if (interfaces[j].descr) strcpy_nospaces(oldperfdata[j].descr, interfaces[j].descr);
+        }
 
         if (!interfaces[j].ignore) {
 
@@ -1229,7 +1233,7 @@ main(int argc, char *argv[])
 
     for (i=0;i<ifNumber;i++)  {
         if (interfaces[i].descr && !interfaces[i].ignore && (!interfaces[i].admin_down || print_all_flag)) {
-            printf(" %s%s::check_snmp::", prefix?prefix:"", oldperfdata[i].descr);
+            printf(" %s%s::check_snmp::", prefix ? prefix : "", get_names_flag ? oldperfdata[i].name : oldperfdata[i].descr);
             printf("%s=%lluc %s=%lluc", if_vars[0], interfaces[i].inOctets, if_vars[1], interfaces[i].outOctets);
             printf(" %s=%luc %s=%luc", if_vars[2], interfaces[i].inDiscards, if_vars[3], interfaces[i].outDiscards);
             printf(" %s=%luc %s=%luc", if_vars[4], interfaces[i].inErrors, if_vars[5], interfaces[i].outErrors);
@@ -1583,7 +1587,7 @@ void set_value(struct ifStruct *oldperfdata, char *interface, char *var, u64 val
         if_vars = if_vars_default;
 
     for (i=0; i < ifNumber; i++) {
-        if (strcmp(interface, oldperfdata[i].descr) == 0) {
+        if (strcmp(interface, oldperfdata[i].descr) == 0 || strcmp(interface, oldperfdata[i].name) == 0) {
             if (strcmp(var, if_vars[0]) == 0)
                 oldperfdata[i].inOctets = value;
             else if (strcmp(var, if_vars[1]) == 0)
